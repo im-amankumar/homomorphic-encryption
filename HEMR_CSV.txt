@@ -1,0 +1,139 @@
+package pack;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable; // Change key type
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.List;
+
+public class HEMR_CSV extends ToolRunner implements Tool {
+
+    private Configuration conf;
+    private static BigInteger n;
+    private static BigInteger g;
+
+    public static void generateKeys() {
+        SecureRandom random = new SecureRandom();
+        BigInteger p = new BigInteger(512, random);
+        BigInteger q = new BigInteger(512, random);
+        n = p.multiply(q);
+        g = n.add(BigInteger.ONE);
+    }
+
+    public static class EncryptionMapper extends Mapper<LongWritable, Text, IntWritable, Text> { // Change key type
+
+        private boolean isFirstRecord = true;
+        private List<String> columnNames = new ArrayList<>();
+
+        @Override
+        protected void setup(Context context) throws IOException, InterruptedException {
+            generateKeys();
+        }
+
+        @Override
+        public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+            String line = value.toString();
+            String[] parts = line.split(",");
+
+            if (isFirstRecord) {
+                columnNames.addAll(java.util.Arrays.asList(parts));
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < columnNames.size(); i++) {
+                    sb.append(columnNames.get(i));
+                    if (i < columnNames.size() - 1) {
+                        sb.append(",");
+                    }
+                }
+                context.write(new IntWritable(-1), new Text(sb.toString())); // Header with -1 key
+                isFirstRecord = false;
+                return;
+            }
+
+            if (parts.length >= 11) {
+                String patientID = parts[0].trim();
+
+                try {
+                    int patientIdInt = Integer.parseInt(patientID); // Convert to integer
+                    String encryptedAge = encryptNumber(Integer.parseInt(parts[1].trim())).toString();
+                    String encryptedViralLoad = encryptNumber(Integer.parseInt(parts[3].trim())).toString();
+                    String encryptedCD4Count = encryptNumber(Integer.parseInt(parts[4].trim())).toString();
+                    String encryptedARTAdherence = encryptNumber(Integer.parseInt(parts[5].trim())).toString();
+
+                    String outputLine = patientID + "," + encryptedAge + "," + parts[2].trim() + "," + encryptedViralLoad + ","
+                            + encryptedCD4Count + "," + encryptedARTAdherence + "," + parts[6].trim() + "," + parts[7].trim() + ","
+                            + parts[8].trim() + "," + parts[9].trim() + "," + parts[10].trim();
+
+                    context.write(new IntWritable(patientIdInt), new Text(outputLine)); // Use IntWritable key
+
+                } catch (NumberFormatException e) {
+                    System.err.println("Skipping invalid data for patient " + patientID + ": " + line);
+                }
+            } else {
+                System.err.println("Skipping incomplete record: " + line);
+            }
+        }
+
+        private BigInteger encryptNumber(int number) {
+            BigInteger m = BigInteger.valueOf(number);
+            return g.modPow(m, n.multiply(n));
+        }
+    }
+
+    public static class HomomorphicReducer extends Reducer<IntWritable, Text, Text, Text> { // Change key type
+        @Override
+        public void reduce(IntWritable key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+            for (Text value : values) {
+                context.write(new Text(key.toString()), value); // Convert back to Text for output
+            }
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        int res = ToolRunner.run(new Configuration(), new HEMR_CSV(), args);
+        System.exit(res);
+    }
+
+    @Override
+    public int run(String[] args) throws Exception {
+        if (args.length != 3) {
+            System.err.println("Usage: HomomorphicEncryptionHIVDataMR <input> <output>");
+            System.exit(-1);
+        }
+
+        Job job = Job.getInstance(getConf(), "Homomorphic Encryption HIV Data MapReduce");
+        job.setJarByClass(HEMR_CSV.class);
+        job.setMapperClass(EncryptionMapper.class);
+        job.setReducerClass(HomomorphicReducer.class);
+        job.setMapOutputKeyClass(IntWritable.class); // Set map output key class
+        job.setMapOutputValueClass(Text.class); // Set map output value class
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(Text.class);
+        FileInputFormat.addInputPath(job, new Path(args[1]));
+        FileOutputFormat.setOutputPath(job, new Path(args[2]));
+
+        return job.waitForCompletion(true) ? 0 : 1;
+    }
+
+    @Override
+    public void setConf(Configuration conf) {
+        this.conf = conf;
+    }
+
+    @Override
+    public Configuration getConf() {
+        return conf;
+    }
+}
