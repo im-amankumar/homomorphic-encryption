@@ -1,1 +1,59 @@
 # homomorphic-encryption
+# Medical data privacy using homomorphic encryption in hadoop ecosystem
+
+# STEPS FOR EXECUTION
+1.	Turn on VMware WorkStation Player
+  •	Select the Cloudera virtual machine
+  •	Click on Play Virtual Machine
+2.	Working with Eclipse
+  •	Create a new ‘Java Project’ in eclipse IDE (Say ‘HIV’)
+  •	Click Next
+  •	Click on Finish
+3.	Adding JAR Files to VMware
+  •	Right Click on Project
+  •	Click on build path  Configure Build Path
+  •	Drag and Drop Client Jars
+  •	Add External Jars,
+    a.	Select Desktop
+    b.	Select Client Jars
+    c.	Select ok
+    d.	Ctrl + a (Select All)
+    e.	Select OK (All the jar files are added)
+    f.	Click ok
+4.	Executing a program in VMware
+  •	Drag and Drop HIV_CSV.csv file into Cloudera
+  •	Open Terminal and check if file is present or not in the desktop
+    a.	$ ls
+    b.	$ cd Desktop
+    c.	$ ls
+  •	Move the HIV_CSV.csv to Hadoop
+    a.	$ hadoop fs -copyFromLocal HIV_CSV.csv /tmp
+  •	Check for file in Hadoop
+    a.	$ Hadoop fs  -ls /tmp
+5.	Create Class
+    •	Right click on project
+    •	Select class
+    •	Give some package name
+    •	Select public static void main
+    •	Click Finish
+6.	Write the Homomorphic Encryption Program
+7.	Create Jar file to run Hadoop file
+    •	Right click on project  select export
+    •	Click on java  select jar files
+    •	Click Next  give name to jar file and browse it to desktop
+    •	Click on Next  Next
+    •	Press browse for main class and add the class
+    •	Click ok
+8.	To compile Hadoop file
+    •	Syntax: $ hadoop jar [name of jar folder created] [package name.classname] [input file] [output file]
+    •	EX: $ hadoop jar hiv.jar HIV.HEMR /tmp/HIV_CSV.csv HIV_OP.csv
+9.	To Confirm
+    •	$ hadoop fs -ls
+10.	To display output
+    •	$ hadoop fs -cat HIV_OP.csv/part-*
+11.	Copy the output file to Local
+  •	$ hadoop fs -copyToLocal HIV_OP.csv
+12.	Copy the csv file into your local device
+  • Copy the hadoop local file ctrl + a  ctrl + c
+  •	create a new file as HIV_OP.csv on local device
+  •	paste the data ctrl + v on local device.
