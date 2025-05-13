@@ -1,8 +1,7 @@
-package pack;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable; // Change key type
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -57,7 +56,7 @@ public class HEMR_CSV extends ToolRunner implements Tool {
                         sb.append(",");
                     }
                 }
-                context.write(new IntWritable(-1), new Text(sb.toString())); // Header with -1 key
+                context.write(new IntWritable(-1), new Text(sb.toString())); 
                 isFirstRecord = false;
                 return;
             }
@@ -66,7 +65,7 @@ public class HEMR_CSV extends ToolRunner implements Tool {
                 String patientID = parts[0].trim();
 
                 try {
-                    int patientIdInt = Integer.parseInt(patientID); // Convert to integer
+                    int patientIdInt = Integer.parseInt(patientID); 
                     String encryptedAge = encryptNumber(Integer.parseInt(parts[1].trim())).toString();
                     String encryptedViralLoad = encryptNumber(Integer.parseInt(parts[3].trim())).toString();
                     String encryptedCD4Count = encryptNumber(Integer.parseInt(parts[4].trim())).toString();
@@ -92,11 +91,11 @@ public class HEMR_CSV extends ToolRunner implements Tool {
         }
     }
 
-    public static class HomomorphicReducer extends Reducer<IntWritable, Text, Text, Text> { // Change key type
+    public static class HomomorphicReducer extends Reducer<IntWritable, Text, Text, Text> { 
         @Override
         public void reduce(IntWritable key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
             for (Text value : values) {
-                context.write(new Text(key.toString()), value); // Convert back to Text for output
+                context.write(new Text(key.toString()), value); 
             }
         }
     }
