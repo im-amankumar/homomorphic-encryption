@@ -1,6 +1,7 @@
 # homomorphic-encryption
 # Medical data privacy using homomorphic encryption in hadoop ecosystem
 
+# Refer the paper - https://doi.org/g9g756
 The digitization of the majority of healthcare data does carry a lot of difficulty toward maintaining patient privacy as well as data security. Standard encryption 
 methods protect information being stored and transmitted; decryption is needed to analyze which makes sensitive information at possible risk of breach. It is in 
 this paper the idea of homomorphic encryption is implemented to conduct various computations on encrypted medical data without decrypting; then, patient information 
@@ -11,7 +12,7 @@ developing and incorporating homomorphic encryption algorithms particularly desi
 care providers on an encrypted dataset, thus ensuring the privacy while maintaining the utility of the data. The system will provide secure sharing of data and 
 collaborative research to improve the care given to patients, adhering to strict regulations on privacy.
 
-Our implementation involves robust encryption algorithm design, optimization for performance, and integration into existing health care data management systems. 
+My implementation involves robust encryption algorithm design, optimization for performance, and integration into existing health care data management systems. 
 This project aims to improve the security and privacy of sensitive healthcare data by offering a scalable and efficient solution for privacy-preserving computations 
 in the health care industry.
 # Keywords: Homomorphic Encryption, Data Security, Healthcare Data.
@@ -21,3 +22,6 @@ in the health care industry.
 
 # Working model
 ![image](https://github.com/user-attachments/assets/487aa8c0-b80c-446c-8b02-dae052dfe007)
+
+
+To get the input file contact me
